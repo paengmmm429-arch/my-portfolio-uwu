@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ปลาหมอคางดำรสชาติเป็นยังไง</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+        margin: 0;
+        background: linear-gradient(to bottom, #6ec6ff, #01579b);
+        color: #033;
+        overflow-x: hidden;
+    }
+
+    /* ===== ปลา ===== */
+    .fish {
+        position: fixed;
+        top: 20%;
+        font-size: 40px;
+        animation: swim 20s linear infinite;
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .fish:nth-child(2) {
+        top: 50%;
+        animation-duration: 25s;
+        font-size: 30px;
+    }
+
+    .fish:nth-child(3) {
+        top: 70%;
+        animation-duration: 18s;
+        font-size: 35px;
+    }
+
+    @keyframes swim {
+        from { transform: translateX(-10%); }
+        to { transform: translateX(110vw); }
+    }
+
+    /* ===== Header ===== */
+    header {
+        text-align: center;
+        padding: 20px;
+        font-size: 28px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    /* ===== Tab Menu ===== */
+    .tab-menu {
+        display: flex;
+        justify-content: center;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(6px);
+    }
+
+    .tab-menu button {
+        background: none;
+        border: none;
+        padding: 14px 22px;
+        font-size: 16px;
+        color: #e0f7fa;
+        cursor: pointer;
+    }
+
+    .tab-menu button.active {
+        border-bottom: 3px solid #fff;
+        color: #fff;
+    }
+
+    /* ===== Content ===== */
+    .tab-content {
+        display: none;
+        min-height: calc(100vh - 120px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .box {
+        background: rgba(255,255,255,0.9);
+        padding: 30px;
+        border-radius: 16px;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+
+    /* ===== Upload ===== */
+    input[type="file"] {
+        display: none;
+    }
+
+    .upload-btn {
+        display: inline-block;
+        padding: 12px 22px;
+        background: #0288d1;
+        color: #fff;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    button {
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: none;
+        background: #0277bd;
+        color: white;
+        cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+        header {
+            font-size: 22px;
+        }
+        .box {
+            padding: 20px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- ปลา -->
+<div class="fish">🐟</div>
+<div class="fish">🐠</div>
+<div class="fish">🐡</div>
+
+<header>
+    ปลาหมอคางดำรสชาติเป็นยังไง
+</header>
+
+<div class="tab-menu">
+    <button class="active" onclick="openTab('home')">Home</button>
+    <button onclick="openTab('check')">Check</button>
+    <button onclick="openTab('about')">About Us</button>
+</div>
+
+<!-- ===== Home ===== -->
+<div id="home" class="tab-content" style="display:flex;">
+    <div class="box">
+        <h2>Home</h2>
+        <p>
+            เว็บไซต์นี้จัดทำขึ้นเพื่อทดลองใช้ AI  
+            ในการตรวจสอบและจำแนกรูปภาพปลาหมอคางดำ  
+            โดยใช้เทคโนโลยี Teachable Machine
+        </p>
+    </div>
+</div>
+
+<!-- ===== Check ===== -->
+<div id="check" class="tab-content">
+    <div class="box">
+        <h2>Check</h2>
+        <p>อัปโหลดภาพปลาเพื่อให้ AI วิเคราะห์</p>
+
+        <button onclick="init()">Load Model</button>
+        <br><br>
+
+        <label for="imageUpload" class="upload-btn">เลือกภาพ</label>
+        <input id="imageUpload" type="file" accept="image/*" onchange="handleImageUpload(event)">
+
+        <br><br>
+        <div id="label-container"></div>
+    </div>
+</div>
+
+<!-- ===== About ===== -->
+<div id="about" class="tab-content">
+    <div class="box">
+        <h2>About Us</h2>
+        <p>
+            เว็บไซต์ตัวอย่างเพื่อการศึกษา  
+            สำหรับนักเรียนสาย IT และ AI  
+            เน้นการออกแบบ Responsive Website
+        </p>
+    </div>
+</div>
+
+<!-- ===== AI ===== -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+<script>
+    function openTab(tabId) {
+        document.querySelectorAll(".tab-content").forEach(t => t.style.display = "none");
+        document.querySelectorAll(".tab-menu button").forEach(b => b.classList.remove("active"));
+        document.getElementById(tabId).style.display = "flex";
+        event.target.classList.add("active");
+    }
+
+    const URL = "https://teachablemachine.withgoogle.com/models/Z1doGNVkM/";
+    let model;
+
+    async function init() {
+        model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+        document.getElementById("label-container").innerHTML = "โหลดโมเดลเรียบร้อย ✅";
+    }
+
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file || !model) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.src = reader.result;
+            img.onload = () => predict(img);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function predict(img) {
+        const prediction = await model.predict(img);
+        let best = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
+
+        document.getElementById("label-container").innerHTML =
+            `ผลลัพธ์: ${best.className} (${best.probability.toFixed(2)})`;
+    }
+</script>
+
+</body>
+</html>
